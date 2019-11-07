@@ -1,7 +1,26 @@
 Install Arthas
 ==============
 
-## Linux/Unix/Mac
+## Quick installation
+
+
+### Use `arthas-boot`(Recommend)
+
+Download`arthas-boot.jar`，Start with `java` command:
+
+```bash
+curl -O https://alibaba.github.io/arthas/arthas-boot.jar
+java -jar arthas-boot.jar
+```
+
+Print usage:
+
+```bash
+java -jar arthas-boot.jar -h
+```
+
+
+### Use `as.sh`
 
 You can install Arthas with one single line command on Linux, Unix, and Mac. Pls. copy the following command and paste it into the command line, then press *Enter* to run:
 
@@ -9,80 +28,68 @@ You can install Arthas with one single line command on Linux, Unix, and Mac. Pls
 curl -L https://alibaba.github.io/arthas/install.sh | sh
 ```
 
-The command above will download the bootstrap script `as.sh` to the current directory. You can move it the any other place you want, or put its location in `$PATH`.
+The command above will download the bootstrap script `as.sh` to the current directory. You can move it to any other place you want, or put its location in `$PATH`.
 
 You can enter its interactive interface by executing `as.sh`, or execute `as.sh -h` for more help information.
 
-## Windows
 
-Latest Version: [![Arthas](https://img.shields.io/maven-central/v/com.taobao.arthas/arthas-packaging.svg?style=flat-square "Arthas")](http://search.maven.org/classic/#search%7Cga%7C1%7Cg%3A%22com.taobao.arthas%22%20AND%20a%3A%22arthas-packaging%22)
+## Full installation
 
-Download the latest `bin.zip`, unzip the package, and find `as.bat` from 'bin' directory. For now this script will only take one argument `pid`, which means you can only diagnose the local Java process. (Welcome any bat script expert to make it better :heart:)
+Latest Version, Click To Download: [![](https://img.shields.io/maven-central/v/com.taobao.arthas/arthas-packaging.svg?style=flat-square "Arthas")](http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.taobao.arthas&a=arthas-packaging&e=zip&c=doc&v=LATEST)
+
+Download and unzip, find `arthas-boot.jar` in the directory. Start with `java` command:
 
 ```bash
-as.bat <pid>
+java -jar arthas-boot.jar
 ```
 
-To have a better experience, you can start the Arthas Server locally by executing `as.bat <pid>`, then run `./as.sh <pid>@<ip>:<por>` in another Linux/Unix/Mac machine. 
+Print usage:
 
-> If the color is not working as expect on windows, you can use [conemu](https://sourceforge.net/projects/conemu) to get it to work. 
+```bash
+java -jar arthas-boot.jar -h
+```
 
 ## Manual Installation
 
 [Manual Installation](manual-install.md)
 
-If you fail to boot Arthas with the provided batch file, you could try to assemble the bootstrap command in the following way.
 
+## Installation via Packages 
 
-1. Locate java in the target JVM:
+Arthas has packages for Debian and Fedora based systems.
+you can get them from the github releases page https://github.com/alibaba/arthas/releases.
 
-    - Linux/Unix/Mac: `ps aux | grep java`
-    - Windows: open the Process Monitor to search java
+### Instruction for Debian based systems 
 
-2. Assemble bootstrap command:
-    
-    Let's suppose we are using `/opt/jdk1.8/bin/java`, then the command should be:
+```bash
+sudo dpkg -i arthas*.deb
+```
+### Instruction for Fedora based systems 
 
-    ```bash
-    /opt/jdk1.8/bin/java -Xbootclasspath/a:/opt/jdk1.8/lib/tools.jar \
-        -jar /tmp/arthas-packaging/arthas-core.jar \
-        -pid 15146 \
-        -target-ip 127.0.0.1 -telnet-port 3658 -http-port 8563 \
-        -core /tmp/arthas-packaging/arthas-core.jar \
-        -agent /tmp/arthas-packaging/arthas/arthas-agent.jar
-    ```
+```bash
+sudo rpm -i arthas*.rpm
+```
 
-    Note:
-    
-    * `-Xbootclasspath` adds tools.jar
-    * `-jar /tmp/arthas-packaging/arthas-core.jar` specifies main entry
-    * `-pid 15146` specifies the target java process PID
-    * `-target-ip 127.0.0.1` specifies the IP
-    * `-telnet-port 3658 -http-port 8563` specifies telnet and HTTP ports for remote access
-    * `-core /tmp/arthas-packaging/arthas-core.jar -agent /tmp/arthas-packaging/arthas/arthas-agent.jar` specifies core/agent jar package
+### Usage
 
-    If you are running on JDK 1.9 or above，then it's unncessary to add `tools.jar` in option `-Xbootclasspath`.
-    
-    You can find the logs from `~/logs/arthas/arthas.log`.
+After the installation of packages, execute 
 
-3. Use telnet to connect once attaching to the target JVM (in step 2) succeeds
-
-    ```bash
-    telnet localhost 3658
-    ```
+```bash
+as.sh
+```
 
 ## Offline Help Documentation
 
-Latest Version:[![Arthas](https://img.shields.io/maven-central/v/com.taobao.arthas/arthas-packaging.svg?style=flat-square "Arthas")](http://search.maven.org/classic/#search%7Cga%7C1%7Cg%3A%22com.taobao.arthas%22%20AND%20a%3A%22arthas-packaging%22)
+Latest Version Documentation, Click To Download:[![](https://img.shields.io/maven-central/v/com.taobao.arthas/arthas-packaging.svg?style=flat-square "Arthas")](http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.taobao.arthas&a=arthas-packaging&e=zip&c=doc&v=LATEST)
 
-Download the latest `doc.zip`.
 
 ## Uninstall
 
 * On Linux/Unix/Mac, delete the files with the following command:
 
     ```bash
-    rm -rf ~/.arthas/ ~/.arthas_history
+    rm -rf ~/.arthas/
+    rm -rf ~/logs/arthas/
     ```
 
-* On Windows, simply delete the zip file and unzipped files. 
+* On Windows, delete `.arthas` and `logs/arthas` directory under user home.

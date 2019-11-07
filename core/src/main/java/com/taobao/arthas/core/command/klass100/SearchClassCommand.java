@@ -8,6 +8,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.taobao.arthas.core.command.Constants;
+import com.taobao.arthas.core.shell.cli.Completion;
+import com.taobao.arthas.core.shell.cli.CompletionUtils;
 import com.taobao.arthas.core.shell.command.AnnotatedCommand;
 import com.taobao.arthas.core.shell.command.CommandProcess;
 import com.taobao.arthas.core.util.ClassUtils;
@@ -29,16 +31,18 @@ import com.taobao.text.util.RenderUtil;
 @Name("sc")
 @Summary("Search all the classes loaded by JVM")
 @Description(Constants.EXAMPLE +
-        "  sc -E org\\\\.apache\\\\.commons\\\\.lang\\\\.StringUtils\n" +
         "  sc -d org.apache.commons.lang.StringUtils\n" +
         "  sc -d org/apache/commons/lang/StringUtils\n" +
         "  sc -d *StringUtils\n" +
+        "  sc -d -f org.apache.commons.lang.StringUtils\n" +
+        "  sc -E org\\\\.apache\\\\.commons\\\\.lang\\\\.StringUtils\n" +
         Constants.WIKI + Constants.WIKI_HOME + "sc")
 public class SearchClassCommand extends AnnotatedCommand {
     private String classPattern;
     private boolean isDetail = false;
     private boolean isField = false;
     private boolean isRegEx = false;
+    private String hashCode = null;
     private Integer expand;
 
     @Argument(argName = "class-pattern", index = 0)
@@ -71,12 +75,18 @@ public class SearchClassCommand extends AnnotatedCommand {
         this.expand = expand;
     }
 
+    @Option(shortName = "c", longName = "classloader")
+    @Description("The hash code of the special class's classLoader")
+    public void setHashCode(String hashCode) {
+        this.hashCode = hashCode;
+    }
+
     @Override
     public void process(CommandProcess process) {
         // TODO: null check
         RowAffect affect = new RowAffect();
         Instrumentation inst = process.session().getInstrumentation();
-        List<Class<?>> matchedClasses = new ArrayList<Class<?>>(SearchUtils.searchClass(inst, classPattern, isRegEx));
+        List<Class<?>> matchedClasses = new ArrayList<Class<?>>(SearchUtils.searchClass(inst, classPattern, isRegEx, hashCode));
         Collections.sort(matchedClasses, new Comparator<Class<?>>() {
             @Override
             public int compare(Class<?> c1, Class<?> c2) {
@@ -101,4 +111,10 @@ public class SearchClassCommand extends AnnotatedCommand {
         }
     }
 
+    @Override
+    public void complete(Completion completion) {
+        if (!CompletionUtils.completeClassName(completion)) {
+            super.complete(completion);
+        }
+    }
 }

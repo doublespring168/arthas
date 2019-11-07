@@ -2,6 +2,7 @@ package com.taobao.arthas.common;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,12 +22,37 @@ import java.util.zip.ZipFile;
  */
 public class IOUtils {
 
+    private IOUtils() {
+    }
+
+    public static String toString(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int length;
+        while ((length = inputStream.read(buffer)) != -1) {
+            result.write(buffer, 0, length);
+        }
+        return result.toString("UTF-8");
+    }
+
     public static void copy(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[1024];
         int len;
         while ((len = in.read(buffer)) != -1) {
             out.write(buffer, 0, len);
         }
+    }
+
+    /**
+     * @return a byte[] containing the information contained in the specified
+     *         InputStream.
+     * @throws java.io.IOException
+     */
+    public static byte[] getBytes(InputStream input) throws IOException {
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        copy(input, result);
+        result.close();
+        return result.toByteArray();
     }
 
     public static IOException close(InputStream input) {
@@ -72,7 +98,7 @@ public class IOUtils {
         File file = new File(zipFile);
         ZipFile zip = null;
         try {
-            int BUFFER = 2048;
+            int BUFFER = 1024 * 8;
 
             zip = new ZipFile(file);
             String newPath = extractFolder;

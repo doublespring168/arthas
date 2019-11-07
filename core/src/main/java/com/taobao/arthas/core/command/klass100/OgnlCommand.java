@@ -8,6 +8,7 @@ import com.taobao.arthas.core.command.express.ExpressException;
 import com.taobao.arthas.core.command.express.ExpressFactory;
 import com.taobao.arthas.core.shell.command.AnnotatedCommand;
 import com.taobao.arthas.core.shell.command.CommandProcess;
+import com.taobao.arthas.core.util.ClassLoaderUtils;
 import com.taobao.arthas.core.util.LogUtil;
 import com.taobao.arthas.core.util.StringUtils;
 import com.taobao.arthas.core.view.ObjectView;
@@ -27,7 +28,7 @@ import com.taobao.middleware.logger.Logger;
 @Summary("Execute ognl expression.")
 @Description(Constants.EXAMPLE
                 + "  ognl '@java.lang.System@out.println(\"hello\")' \n"
-                + "  ognl -x 2 '@Singleton@getInstance() \n"
+                + "  ognl -x 2 '@Singleton@getInstance()' \n"
                 + "  ognl '@Demo@staticFiled' \n"
                 + "  ognl '#value1=@System@getProperty(\"java.home\"), #value2=@System@getProperty(\"java.runtime.name\"), {#value1, #value2}'\n"
                 + "  ognl -c 5d113a51 '@com.taobao.arthas.core.GlobalOptions@isDump' \n"
@@ -68,7 +69,7 @@ public class OgnlCommand extends AnnotatedCommand {
             if (hashCode == null) {
                 classLoader = ClassLoader.getSystemClassLoader();
             } else {
-                classLoader = findClassLoader(inst, hashCode);
+                classLoader = ClassLoaderUtils.getClassLoader(inst, hashCode);
             }
 
             if (classLoader == null) {
@@ -84,23 +85,13 @@ public class OgnlCommand extends AnnotatedCommand {
                 process.write(result + "\n");
             } catch (ExpressException e) {
                 logger.warn("ognl: failed execute express: " + express, e);
-                process.write("Failed to get static, exception message: " + e.getMessage()
+                process.write("Failed to execute ognl, exception message: " + e.getMessage()
                                 + ", please check $HOME/logs/arthas/arthas.log for more details. \n");
                 exitCode = -1;
             }
         } finally {
             process.end(exitCode);
         }
-    }
-
-    private static ClassLoader findClassLoader(Instrumentation inst, String hashCode) {
-        for (Class<?> clazz : inst.getAllLoadedClasses()) {
-            ClassLoader classLoader = clazz.getClassLoader();
-            if (classLoader != null && hashCode.equals(Integer.toHexString(classLoader.hashCode()))) {
-                return classLoader;
-            }
-        }
-        return null;
     }
 
 }

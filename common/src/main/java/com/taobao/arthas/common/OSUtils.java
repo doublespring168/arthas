@@ -16,13 +16,14 @@ public class OSUtils {
             platform = PlatformEnum.LINUX;
         } else if (OPERATING_SYSTEM_NAME.startsWith("mac") || OPERATING_SYSTEM_NAME.startsWith("darwin")) {
             platform = PlatformEnum.MACOSX;
-        } else if (OPERATING_SYSTEM_NAME.startsWith("mac") || OPERATING_SYSTEM_NAME.startsWith("darwin")) {
-            platform = PlatformEnum.MACOSX;
         } else if (OPERATING_SYSTEM_NAME.startsWith("windows")) {
             platform = PlatformEnum.WINDOWS;
         } else {
             platform = PlatformEnum.UNKNOWN;
         }
+    }
+
+    private OSUtils() {
     }
 
     public static boolean isWindows() {
