@@ -47,8 +47,9 @@ import com.taobao.middleware.cli.annotations.Summary;
                 + "  java -jar arthas-boot.jar --stat-url 'http://192.168.10.11:8080/api/stat'\n"
                 + "  java -jar arthas-boot.jar -c 'sysprop; thread' <pid>\n"
                 + "  java -jar arthas-boot.jar -f batch.as <pid>\n"
-                + "  java -jar arthas-boot.jar --use-version 3.1.4\n"
+                + "  java -jar arthas-boot.jar --use-version 3.2.0\n"
                 + "  java -jar arthas-boot.jar --versions\n"
+                + "  java -jar arthas-boot.jar --select arthas-demo\n"
                 + "  java -jar arthas-boot.jar --session-timeout 3600\n" + "  java -jar arthas-boot.jar --attach-only\n"
                 + "  java -jar arthas-boot.jar --repo-mirror aliyun --use-http\n" + "WIKI:\n"
                 + "  https://alibaba.github.io/arthas\n")
@@ -60,7 +61,7 @@ public class Bootstrap {
 
     private boolean help = false;
 
-    private int pid = -1;
+    private long pid = -1;
     private String targetIp = DEFAULT_TARGET_IP;
     private int telnetPort = DEFAULT_TELNET_PORT;
     private int httpPort = DEFAULT_HTTP_PORT;
@@ -114,7 +115,9 @@ public class Bootstrap {
 
     private String statUrl;
 
-    static {
+    private String select;
+
+	static {
         ARTHAS_LIB_DIR = new File(
                 System.getProperty("user.home") + File.separator + ".arthas" + File.separator + "lib");
         try {
@@ -138,7 +141,7 @@ public class Bootstrap {
 
     @Argument(argName = "pid", index = 0, required = false)
     @Description("Target pid")
-    public void setPid(int pid) {
+    public void setPid(long pid) {
         this.pid = pid;
     }
 
@@ -256,6 +259,12 @@ public class Bootstrap {
         this.statUrl = statUrl;
     }
 
+    @Option(longName = "select")
+    @Description("select target process by classname or JARfilename")
+    public void setSelect(String select) {
+        this.select = select;
+    }
+
     public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException,
                     ClassNotFoundException, NoSuchMethodException, SecurityException, IllegalAccessException,
                     IllegalArgumentException, InvocationTargetException {
@@ -314,8 +323,8 @@ public class Bootstrap {
         }
 
         // check telnet/http port
-        int telnetPortPid = -1;
-        int httpPortPid = -1;
+        long telnetPortPid = -1;
+        long httpPortPid = -1;
         if (bootstrap.getTelnetPort() > 0) {
             telnetPortPid = SocketUtils.findTcpListenProcess(bootstrap.getTelnetPort());
             if (telnetPortPid > 0) {
@@ -329,11 +338,11 @@ public class Bootstrap {
             }
         }
 
-        int pid = bootstrap.getPid();
+        long pid = bootstrap.getPid();
         // select pid
         if (pid < 0) {
             try {
-                pid = ProcessUtils.select(bootstrap.isVerbose(), telnetPortPid);
+                pid = ProcessUtils.select(bootstrap.isVerbose(), telnetPortPid, bootstrap.getSelect());
             } catch (InputMismatchException e) {
                 System.out.println("Please input an integer to select pid.");
                 System.exit(1);
@@ -430,8 +439,10 @@ public class Bootstrap {
             if (localLastestVersion == null) {
                 if (remoteLastestVersion == null) {
                     // exit
-                    AnsiLog.error("Can not find Arthas under local: {} and remote: {}", ARTHAS_LIB_DIR,
-                                    bootstrap.getRepoMirror());
+                    AnsiLog.error("Can not find Arthas under local: {} and remote maven repo mirror: {}", ARTHAS_LIB_DIR,
+                            bootstrap.getRepoMirror());
+                    AnsiLog.error(
+                            "Unable to download arthas from remote server, please download the full package according to wiki: https://github.com/alibaba/arthas");
                     System.exit(1);
                 } else {
                     needDownload = true;
@@ -649,7 +660,7 @@ public class Bootstrap {
         return attachOnly;
     }
 
-    public int getPid() {
+    public long getPid() {
         return pid;
     }
 
@@ -688,4 +699,8 @@ public class Bootstrap {
     public String getStatUrl() {
         return statUrl;
     }
+
+    public String getSelect() {
+		return select;
+	}
 }

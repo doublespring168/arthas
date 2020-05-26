@@ -8,10 +8,10 @@
 
 # program : Arthas
 #  author : Core Engine @ Taobao.com
-#    date : 2019-09-19
+#    date : 2020-04-11
 
 # current arthas script version
-ARTHAS_SCRIPT_VERSION=3.1.4
+ARTHAS_SCRIPT_VERSION=3.2.0
 
 # SYNOPSIS
 #   rreadlink <fileOrDirPath>
@@ -119,6 +119,9 @@ DEBUG_ATTACH=false
 HEIGHT=
 # arthas-client terminal width
 WIDTH=
+
+# select target process by classname or JARfilename
+SELECT=
 
 # Verbose, print debug info.
 VERBOSE=false
@@ -423,6 +426,7 @@ Options and Arguments:
     --debug-attach              Debug attach agent
     --tunnel-server             Remote tunnel server url
     --agent-id                  Special agent id
+    --select                    select target process by classname or JARfilename
  -c,--command <value>           Command to execute, multiple commands separated
                                 by ;
  -f,--batch-file <value>        The batch file to execute
@@ -440,9 +444,10 @@ EXAMPLES:
   ./as.sh --stat-url 'http://192.168.10.11:8080/api/stat'
   ./as.sh -c 'sysprop; thread' <pid>
   ./as.sh -f batch.as <pid>
-  ./as.sh --use-version 3.1.4
+  ./as.sh --use-version 3.2.0
   ./as.sh --session-timeout 3600
   ./as.sh --attach-only
+  ./as.sh --select arthas-demo
   ./as.sh --repo-mirror aliyun --use-http
 WIKI:
   https://alibaba.github.io/arthas
@@ -583,6 +588,11 @@ parse_arguments()
         shift # past argument
         shift # past value
         ;;
+        --select)
+        SELECT="$2"
+        shift # past argument
+        shift # past value
+        ;;
         -v|--verbose)
         VERBOSE=true
         shift # past argument
@@ -634,6 +644,15 @@ parse_arguments()
         fi
     fi
 
+    # try to find target pid by --select option
+    if [ -z ${TARGET_PID} ] && [ ${SELECT} ]; then
+        local IFS=$'\n'
+        CANDIDATES=($(call_jps | grep -v sun.tools.jps.Jps | grep "${SELECT}" | awk '{print $0}'))
+        if [ ${#CANDIDATES[@]} -eq 1 ]; then
+            TARGET_PID=${CANDIDATES[0]}
+        fi
+    fi
+
     # check pid
     if [ -z ${TARGET_PID} ] && [ ${BATCH_MODE} = false ]; then
         # interactive mode
@@ -645,7 +664,7 @@ parse_arguments()
             return 1
         fi
 
-        echo "Found existing java process, please choose one and hit RETURN."
+        echo "Found existing java process, please choose one and input the serial number of the process, eg : 1. Then hit ENTER."
 
         index=0
         suggest=1
@@ -807,7 +826,7 @@ active_console()
              ${TARGET_IP} \
              ${TELNET_PORT} \
              "${tempArgs[@]}" \
-             -c ${COMMAND}
+             -c "${COMMAND}"
         fi
         if [ "${BATCH_FILE}" ] ; then
         "${JAVA_HOME}/bin/java" ${ARTHAS_OPTS} ${JVM_OPTS} \

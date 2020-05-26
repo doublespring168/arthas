@@ -6,14 +6,16 @@ Advanced Usage
 * help - display Arthas help
 * cls - clear the screen
 * [cat](cat.md) - Concatenate and print files
-* [grep]](grep.md) - Pattern searcher
+* [echo](echo.md) - write arguments to the standard output
+* [grep](grep.md) - Pattern searcher
+* [tee](tee.md) - Copies standard input to standard output, making a copy in zero or more files.
 * [pwd](pwd.md) - Return working directory name
 * session - display current session information
-* [reset](reset.md) - reset all the enhanced classes. All enhanced classes will also be reset when Arthas server is closed by `stop/shutdown`
+* [reset](reset.md) - reset all the enhanced classes. All enhanced classes will also be reset when Arthas server is closed by `stop`
 * version - print the version for the Arthas attached to the current Java process
 * history - view command history
 * quit/exit - exit the current Arthas session, without effecting other sessions
-* stop/shutdown - terminate the Arthas server, all Arthas sessions will be destroyed
+* stop - terminate the Arthas server, all Arthas sessions will be destroyed
 * [keymap](keymap.md) - keymap for Arthas keyboard shortcut
 
 ## JVM
@@ -24,6 +26,7 @@ Advanced Usage
 * [sysprop](sysprop.md) - view/modify system properties
 * [sysenv](sysenv.md) — view system environment variables
 * [vmoption](vmoption.md) - view/modify the vm diagnostic options.
+* [perfcounter](perfcounter.md) - show JVM Perf Counter information
 * [logger](logger.md) - print the logger information, update the logger level
 * [getstatic](getstatic.md) - examine class's static properties
 * [ognl](ognl.md) - execute ongl expression
@@ -42,7 +45,7 @@ Advanced Usage
 
 ## monitor/watch/trace - related
 
-> **Attention**: commands here are taking advantage of byte-code-injection, which means we are injecting some [aspects](https://en.wikipedia.org/wiki/Aspect-oriented_programming) into the current classes for monitoring and statistics purpose. Therefore when use it for online troubleshooting in your production environment, you'd better **explicitly specify** classes/methods/criteria, and remember to remove the injected code by `stop` or `reset`. 
+> **Attention**: commands here are taking advantage of byte-code-injection, which means we are injecting some [aspects](https://en.wikipedia.org/wiki/Aspect-oriented_programming) into the current classes for monitoring and statistics purpose. Therefore, when using it for online troubleshooting in your production environment, you'd better **explicitly specify** classes/methods/criteria, and remember to remove the injected code by `stop` or `reset`. 
 
 * [monitor](monitor.md) - monitor method execution statistics
 * [watch](watch.md) - display the input/output parameter, return object, and thrown exception of specified method invocation
@@ -54,6 +57,10 @@ Advanced Usage
 
 * [options](options.md) - check/set Arthas global options
 
+
+## profiler/flame graph
+
+* [profiler](profiler.md) - use [async-profiler](https://github.com/jvm-profiling-tools/async-profiler) to generate flame graph
 
 ## pipe
 
@@ -78,6 +85,10 @@ Arthas provides `pipe` to process the result returned from commands further, e.g
 Arthas supports living inside a browser. The communication between arthas and browser is via websocket.
 
 * [Web Console](web-console.md)
+
+## Start as a Java Agent
+
+* [Start as a Java Agent](agent.md)
 
 ## User data report
 
